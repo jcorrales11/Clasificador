@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import os
+import re
 import smtplib
 import uuid
 from datetime import datetime
@@ -39,12 +40,31 @@ CATEGORY_UI = {
     },
 }
 
-DEFAULT_THRESHOLD = 0.55
+DEFAULT_THRESHOLD = 0.50
 MIN_WORDS = 3
+
+RULE_KEYWORDS = {
+    "queja": [
+        "reclamo", "queja", "quejar", "reembolso", "cobro mal", "cobro incorrecto", "me cobraron",
+        "mala atencion", "mala atención", "defectuoso", "dañado", "danado", "vencido", "error en mi compra",
+        "devolucion", "devolución", "no funciona", "mal estado", "cajero", "cargo no autorizado",
+    ],
+    "correo": [
+        "adjunto", "documentos", "archivo", "tramite", "trámite", "formulario", "expediente",
+        "constancia", "contrato", "reenvio", "reenvío", "consulta", "seguimiento", "solicitud",
+        "datos", "comprobante", "evidencia", "certificado",
+    ],
+    "venta": [
+        "cotizacion", "cotización", "comprar", "compra", "precio", "precios", "promocion", "promoción",
+        "cajas", "unidades", "proveedor", "oferta", "asesor comercial", "venta", "catalogo", "catálogo",
+        "paquete", "plan", "licencias", "suscripcion", "suscripción",
+    ],
+}
+
 EXAMPLES = [
-    "Quiero reportar que mi pedido llegó dañado y necesito un reembolso.",
-    "Adjunto la documentación solicitada para continuar mi trámite.",
-    "Estoy interesado en una cotización para 25 unidades de su producto.",
+    "El cajero me cobró mal y necesito solución.",
+    "Adjunto la documentación solicitada para continuar el trámite.",
+    "Quiero 50 cajas de leche y necesito una cotización.",
 ]
 
 
@@ -53,7 +73,7 @@ def inject_css():
         """
         <style>
         .stApp {
-            background: linear-gradient(180deg, #f5f7fb 0%, #eef2ff 100%);
+            background: linear-gradient(180deg, #f7f8fc 0%, #eef2ff 100%);
         }
         .main .block-container {
             padding-top: 1.2rem;
@@ -61,7 +81,7 @@ def inject_css():
             max-width: 1180px;
         }
         .hero-card {
-            background: linear-gradient(135deg, #111827 0%, #1f2937 48%, #312e81 100%);
+            background: linear-gradient(135deg, #111827 0%, #1f2937 45%, #1d4ed8 100%);
             color: white;
             border-radius: 24px;
             padding: 28px 32px;
@@ -71,7 +91,7 @@ def inject_css():
         .brand-chip {
             display: inline-block;
             background: rgba(255,255,255,0.14);
-            border: 1px solid rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.20);
             color: #ffffff;
             padding: 0.35rem 0.75rem;
             border-radius: 999px;
@@ -79,7 +99,7 @@ def inject_css():
             margin-bottom: 0.8rem;
         }
         .hero-title {
-            font-size: 2.3rem;
+            font-size: 2.35rem;
             font-weight: 800;
             line-height: 1.1;
             margin: 0;
@@ -93,7 +113,7 @@ def inject_css():
         .metric-card {
             background: white;
             border-radius: 18px;
-            padding: 18px 18px;
+            padding: 18px;
             box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
             border: 1px solid #e5e7eb;
             margin-bottom: 0.8rem;
@@ -105,7 +125,7 @@ def inject_css():
         }
         .metric-value {
             color: #111827;
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             font-weight: 700;
         }
         .section-card {
@@ -123,23 +143,23 @@ def inject_css():
             background: #f8fafc;
             border: 1px solid #e2e8f0;
         }
+        .sidebar-card {
+            background: rgba(255,255,255,0.78);
+            border-radius: 18px;
+            padding: 14px 16px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 0.8rem;
+        }
         .stTextArea textarea, .stTextInput input {
             border-radius: 14px !important;
         }
         .stButton>button {
             border-radius: 12px;
             font-weight: 700;
-            padding: 0.6rem 1.2rem;
+            padding: 0.62rem 1.2rem;
             border: none;
             background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
             color: white;
-        }
-        .sidebar-card {
-            background: rgba(255,255,255,0.7);
-            border-radius: 18px;
-            padding: 14px 16px;
-            border: 1px solid #e5e7eb;
-            margin-bottom: 0.8rem;
         }
         </style>
         """,
@@ -155,15 +175,52 @@ def load_artifact():
     return {"model": artifact, "threshold": DEFAULT_THRESHOLD, "version": "1.0"}
 
 
+def normalize_text(text: str) -> str:
+    clean = " ".join(text.strip().split())
+    return clean.lower()
+
+
+def detect_rule_based_intent(message: str):
+    message_lower = normalize_text(message)
+
+    for keyword in RULE_KEYWORDS["queja"]:
+        if keyword in message_lower:
+            return "queja", 0.92
+
+    quantity_match = re.search(r"\b(\d+)\b", message_lower)
+    if quantity_match and any(word in message_lower for word in ["caja", "cajas", "unidad", "unidades", "litros", "pedido"]):
+        return "venta", 0.93
+
+    for keyword in RULE_KEYWORDS["venta"]:
+        if keyword in message_lower:
+            return "venta", 0.90
+
+    for keyword in RULE_KEYWORDS["correo"]:
+        if keyword in message_lower:
+            return "correo", 0.88
+
+    return None, None
+
+
 def classify_message(model, threshold: float, message: str):
     clean = " ".join(message.strip().split())
     words = clean.split()
+
     if len(words) < MIN_WORDS:
         return {
             "status": "manual_review",
             "category": None,
             "confidence": 0.0,
-            "reason": "El mensaje es demasiado corto. Añade más detalle para clasificarlo mejor.",
+            "reason": "Necesitamos un poco más de detalle para clasificar la solicitud correctamente.",
+        }
+
+    rule_category, rule_confidence = detect_rule_based_intent(clean)
+    if rule_category:
+        return {
+            "status": "classified",
+            "category": rule_category,
+            "confidence": rule_confidence,
+            "reason": "Clasificación realizada con apoyo de reglas de negocio.",
         }
 
     if hasattr(model, "predict_proba"):
@@ -181,7 +238,7 @@ def classify_message(model, threshold: float, message: str):
             "status": "manual_review",
             "category": None,
             "confidence": confidence,
-            "reason": "La confianza del modelo es baja. Conviene pedir más contexto o revisar manualmente.",
+            "reason": "No se pudo determinar la categoría con suficiente seguridad.",
         }
 
     return {
@@ -228,7 +285,7 @@ def send_email_notification(to_email: str, ticket_id: str, category: str, messag
     smtp_from = os.getenv("SMTP_FROM", smtp_user or "")
 
     if not (smtp_host and smtp_user and smtp_password and smtp_from and to_email):
-        return False, "Notificación por correo no configurada todavía."
+        return False
 
     ui = CATEGORY_UI[category]
     msg = EmailMessage()
@@ -262,11 +319,58 @@ Gracias por contactar con CJ².
             server.login(smtp_user, smtp_password)
             server.send_message(msg)
 
-    return True, "Correo de confirmación enviado correctamente."
+    return True
+
+
+def init_state():
+    defaults = {
+        "cliente_input": "",
+        "correo_input": "",
+        "mensaje_input": "",
+        "last_feedback": None,
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+
+def clear_form_fields():
+    st.session_state["cliente_input"] = ""
+    st.session_state["correo_input"] = ""
+    st.session_state["mensaje_input"] = ""
+
+
+def store_feedback(payload: dict):
+    st.session_state["last_feedback"] = payload
+
+
+def render_feedback():
+    payload = st.session_state.get("last_feedback")
+    if not payload:
+        return
+
+    if payload["status"] == "classified":
+        ui = CATEGORY_UI[payload["category"]]
+        st.success(f"Solicitud registrada con éxito. Ticket generado: {payload['ticket_id']}")
+        st.markdown(
+            f"<div class='result-box' style='border-left: 8px solid {ui['color']};'>"
+            f"<h4 style='margin:0 0 0.4rem 0;'>{ui['icon']} Categoría detectada: {ui['title']}</h4>"
+            f"<p style='margin:0 0 0.45rem 0;'>{ui['message']}</p>"
+            f"<p style='margin:0;'><strong>Confianza estimada:</strong> {payload['confidence']*100:.1f}%</p>"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+        st.info(ui["next_step"])
+        if payload.get("email_sent"):
+            st.success("Se ha enviado una confirmación al correo indicado.")
+    else:
+        st.warning(f"Tu solicitud se registró como pendiente de revisión. Ticket generado: {payload['ticket_id']}")
+        st.info("Por favor, añade un poco más de detalle para poder clasificarla mejor.")
 
 
 st.set_page_config(page_title="CJ² Smart Desk", page_icon="📨", layout="wide")
 inject_css()
+init_state()
 
 if not MODEL_PATH.exists():
     st.error("No se encontró el modelo entrenado. Ejecuta primero: python train_model.py")
@@ -275,12 +379,15 @@ if not MODEL_PATH.exists():
 artifact = load_artifact()
 model = artifact["model"]
 threshold = float(artifact.get("threshold", DEFAULT_THRESHOLD))
-version = artifact.get("version", "1.0")
 
 with st.sidebar:
     st.markdown("<div class='sidebar-card'><h2 style='margin:0;'>CJ²</h2><p style='margin:0.35rem 0 0 0;'>Centro inteligente de clasificación y atención digital.</p></div>", unsafe_allow_html=True)
-    st.markdown("<div class='sidebar-card'><strong>Ejemplos de prueba</strong><br><br>1. Quiero reportar que mi pedido llegó dañado y necesito un reembolso.<br><br>2. Adjunto la documentación solicitada para continuar mi trámite.<br><br>3. Estoy interesado en una cotización para 25 unidades de su producto.</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='sidebar-card'><strong>Estado del sistema</strong><br><br>Modelo: v{version}<br>Umbral de confianza: {threshold:.2f}<br>Categorías: queja, correo, venta</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='sidebar-card'><strong>Ejemplos de solicitud</strong><br><br>"
+        f"1. {EXAMPLES[0]}<br><br>2. {EXAMPLES[1]}<br><br>3. {EXAMPLES[2]}</div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown("<div class='sidebar-card'><strong>Atención</strong><br><br>El sistema registra solicitudes de queja, correo / consulta y venta.</div>", unsafe_allow_html=True)
 
 st.markdown(
     """
@@ -297,25 +404,36 @@ col_a, col_b, col_c = st.columns(3)
 with col_a:
     st.markdown("<div class='metric-card'><div class='metric-label'>Empresa</div><div class='metric-value'>CJ²</div></div>", unsafe_allow_html=True)
 with col_b:
-    st.markdown("<div class='metric-card'><div class='metric-label'>Motor IA</div><div class='metric-value'>Clasificación NLP</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='metric-card'><div class='metric-label'>Servicio</div><div class='metric-value'>Recepción inteligente</div></div>", unsafe_allow_html=True)
 with col_c:
-    st.markdown("<div class='metric-card'><div class='metric-label'>Estado</div><div class='metric-value'>Operativo</div></div>", unsafe_allow_html=True)
+    st.markdown("<div class='metric-card'><div class='metric-label'>Estado</div><div class='metric-value'>Disponible</div></div>", unsafe_allow_html=True)
 
 st.markdown("<div class='section-card'>", unsafe_allow_html=True)
 st.subheader("Registro de solicitud")
 st.caption("Completa los datos del cliente y escribe el mensaje. El sistema generará un ticket y clasificará automáticamente la solicitud.")
 
+render_feedback()
+
 with st.form("classification_form"):
     col1, col2 = st.columns(2)
     with col1:
-        cliente = st.text_input("Nombre del cliente", placeholder="Ejemplo: María López")
+        cliente = st.text_input(
+            "Nombre del cliente",
+            placeholder="Ejemplo: María López",
+            key="cliente_input",
+        )
     with col2:
-        correo_cliente = st.text_input("Correo del cliente (opcional)", placeholder="cliente@correo.com")
+        correo_cliente = st.text_input(
+            "Correo del cliente (opcional)",
+            placeholder="cliente@correo.com",
+            key="correo_input",
+        )
 
     mensaje = st.text_area(
         "Mensaje del cliente",
         height=180,
         placeholder="Ejemplo: Quiero reclamar porque el producto llegó en mal estado y necesito una solución.",
+        key="mensaje_input",
     )
 
     submitted = st.form_submit_button("Registrar y clasificar")
@@ -331,13 +449,12 @@ if submitted:
 
         if result["status"] == "classified":
             category = result["category"]
-            ui = CATEGORY_UI[category]
-            email_status = "no enviado"
-            email_msg = ""
-
+            email_sent = False
             if correo_cliente.strip():
-                ok, email_msg = send_email_notification(correo_cliente.strip(), ticket_id, category, clean_message)
-                email_status = "enviado" if ok else "pendiente de configuración"
+                try:
+                    email_sent = send_email_notification(correo_cliente.strip(), ticket_id, category, clean_message)
+                except Exception:
+                    email_sent = False
 
             save_case(
                 {
@@ -349,33 +466,18 @@ if submitted:
                     "categoria": category,
                     "confianza": f"{result['confidence']:.4f}",
                     "estado": "registrado",
-                    "notificacion_email": email_status,
+                    "notificacion_email": "enviado" if email_sent else "no enviado",
                 }
             )
-
-            st.success(f"Solicitud registrada con éxito. Ticket generado: {ticket_id}")
-            st.markdown(
-                f"<div class='result-box' style='border-left: 8px solid {ui['color']};'>"
-                f"<h4 style='margin:0 0 0.4rem 0;'>{ui['icon']} Categoría detectada: {ui['title']}</h4>"
-                f"<p style='margin:0 0 0.45rem 0;'>{ui['message']}</p>"
-                f"<p style='margin:0;'><strong>Confianza del modelo:</strong> {result['confidence']*100:.1f}%</p>"
-                f"</div>",
-                unsafe_allow_html=True,
+            store_feedback(
+                {
+                    "status": "classified",
+                    "ticket_id": ticket_id,
+                    "category": category,
+                    "confidence": result["confidence"],
+                    "email_sent": email_sent,
+                }
             )
-
-            st.info(ui["next_step"])
-            if correo_cliente.strip():
-                if email_status == "enviado":
-                    st.success("Notificación por correo enviada correctamente al cliente.")
-                else:
-                    st.warning(
-                        "La app ya está preparada para enviar correos, pero faltan credenciales SMTP para activarlo en producción. "
-                        "La solicitud sí quedó registrada correctamente."
-                    )
-                    st.caption(email_msg)
-            else:
-                st.caption("No se indicó correo del cliente. Solo se registró el ticket en el sistema.")
-
         else:
             save_case(
                 {
@@ -390,18 +492,14 @@ if submitted:
                     "notificacion_email": "no enviado",
                 }
             )
-            st.warning(f"No se pudo clasificar con suficiente seguridad. Ticket generado: {ticket_id}")
-            st.info(result["reason"])
-            st.caption("Sugerencia: añade más detalle al mensaje, por ejemplo si es reclamo, consulta administrativa o intención de compra.")
+            store_feedback(
+                {
+                    "status": "manual_review",
+                    "ticket_id": ticket_id,
+                }
+            )
 
-with st.expander("Cómo entrenar y mejorar la IA"):
-    st.markdown(
-        """
-        1. Añade más ejemplos reales en `mensajes.csv`.
-        2. Ejecuta `python train_model.py` para volver a entrenar el modelo.
-        3. Prueba mensajes nuevos y corrige los casos donde falle.
-        4. Si la app devuelve revisión manual, incorpora ejemplos parecidos al dataset.
-        """
-    )
+        clear_form_fields()
+        st.rerun()
 
 st.markdown("</div>", unsafe_allow_html=True)

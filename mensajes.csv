@@ -148,3 +148,9 @@ mensaje,categoria
 "Quiero adquirir el producto para mi empresa cuanto antes",venta
 "¿Cuál es el precio final si compro varias licencias?",venta
 "Estoy evaluando una compra y quiero condiciones de pago",venta
+"El cajero me cobró mal",queja
+"El cajero me cobro mal",queja
+"Me cobraron mal en caja y quiero reclamar",queja
+"Quiero 50 cajas de leche",venta
+"Necesito 50 cajas de leche para mi negocio",venta
+"Quiero comprar 50 cajas de leche",venta
