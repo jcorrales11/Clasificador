@@ -1,94 +1,92 @@
-# Proyecto IA: Clasificador de mensajes
+# CJ² Smart Desk
 
-Este proyecto es un prototipo de asistente inteligente que interpreta mensajes escritos por usuarios y los clasifica en tres categorías:
+Sistema inteligente para clasificar mensajes de clientes en tres categorías:
 
 - **queja**
-- **correo**
+- **correo / consulta**
 - **venta**
 
-El sistema usa **Python**, **scikit-learn** y **Streamlit**.
+## Funciones incluidas
 
-## 1. Estructura del proyecto
+- Interfaz más profesional con marca **CJ²**
+- Registro de ticket automático
+- Clasificación automática con IA
+- Detección de baja confianza para enviar a **revisión manual**
+- Registro local de casos en `historial_casos.csv`
+- Confirmación al usuario cuando su solicitud se registra con éxito
+- Preparado para enviar correo de confirmación si configuras SMTP
+
+## Archivos principales
 
 ```bash
-proyecto_ia_clasificador/
-│
-├── app.py
-├── train_model.py
-├── mensajes.csv
-├── modelo_mensajes.pkl
-├── requirements.txt
-└── README.md
+app.py
+train_model.py
+mensajes.csv
+modelo_mensajes.pkl
+requirements.txt
+README.md
 ```
 
-## 2. Cómo abrirlo en PyCharm
-
-1. Descarga y descomprime el proyecto.
-2. Abre **PyCharm**.
-3. Selecciona **Open** y elige la carpeta `proyecto_ia_clasificador`.
-4. Espera a que PyCharm detecte el entorno.
-
-## 3. Instalar dependencias
-
-Abre la terminal dentro de PyCharm y ejecuta:
+## Instalación
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 4. Entrenar el modelo
+## Reentrenar la IA
+
+Cada vez que agregues nuevos ejemplos a `mensajes.csv`, vuelve a entrenar:
 
 ```bash
 python train_model.py
 ```
 
-Esto generará el archivo `modelo_mensajes.pkl`.
-
-## 5. Ejecutar la aplicación
+## Ejecutar la aplicación
 
 ```bash
-streamlit run app.py
+python -m streamlit run app.py
 ```
 
-## 6. Ejemplos de prueba
+## Cómo mejorar el modelo
 
-### Ejemplo 1
-**Entrada:**
+1. Añade más frases reales al archivo `mensajes.csv`.
+2. Mantén un buen equilibrio entre categorías.
+3. Incluye ejemplos cortos, largos y con errores comunes.
+4. Reentrena con `python train_model.py`.
+5. Prueba casos nuevos y corrige los que fallen.
 
-```text
-Quiero presentar una queja porque mi pedido llegó dañado
+## Correos de confirmación (opcional)
+
+La app ya está preparada para enviar correos reales, pero debes configurar estas variables de entorno:
+
+```bash
+SMTP_HOST
+SMTP_PORT
+SMTP_USER
+SMTP_PASSWORD
+SMTP_FROM
 ```
 
-**Salida esperada:** `queja`
+### Ejemplo orientativo
 
-### Ejemplo 2
-**Entrada:**
-
-```text
-Adjunto los documentos solicitados para continuar el trámite
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=tu_correo@gmail.com
+SMTP_PASSWORD=tu_clave_o_app_password
+SMTP_FROM=tu_correo@gmail.com
 ```
 
-**Salida esperada:** `correo`
+> Nota: para Gmail normalmente debes usar una **App Password**.
 
-### Ejemplo 3
-**Entrada:**
+## Qué pasa si el mensaje no se entiende
 
-```text
-Estoy interesado en comprar 20 unidades y necesito una cotización
-```
+Si el texto es muy corto o la confianza del modelo es baja, la app no fuerza una categoría. En ese caso lo manda a **revisión manual**.
 
-**Salida esperada:** `venta`
+## Ideas de mejora futura
 
-## 7. Idea para sustentar ante el profesor
-
-Puedes explicar el proyecto así:
-
-> Se desarrolló un asistente inteligente basado en clasificación automática de texto. El sistema analiza mensajes escritos por usuarios y, mediante técnicas de procesamiento de lenguaje natural, los clasifica según su intención principal: queja, correo o venta.
-
-## 8. Mejoras futuras
-
-- Agregar más categorías
-- Detectar prioridad alta, media o baja
-- Guardar historial en base de datos
-- Añadir análisis de sentimiento
-- Generar respuestas automáticas más avanzadas
+- Guardar casos en base de datos
+- Panel de administración
+- Inicio de sesión para operadores
+- Notificaciones reales por correo y panel interno
+- Más categorías: soporte, facturación, devoluciones, seguimiento
