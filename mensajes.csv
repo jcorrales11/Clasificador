@@ -1,0 +1,91 @@
+mensaje,categoria
+"Quiero presentar una queja porque mi pedido llegó roto",queja
+"Estoy muy molesto porque nadie responde a mi reclamo",queja
+"Deseo reportar una mala atención en la sucursal",queja
+"Mi producto vino incompleto y exijo una solución",queja
+"Quiero reclamar porque me cobraron dos veces",queja
+"El servicio técnico no resolvió mi problema y sigo esperando",queja
+"Necesito poner una queja por la demora en la entrega",queja
+"Recibí un artículo defectuoso y quiero devolverlo",queja
+"No estoy conforme con la atención recibida",queja
+"Quiero dejar constancia de una queja formal",queja
+"Mi compra llegó dañada y nadie me da respuesta",queja
+"Me siento perjudicado por el mal servicio brindado",queja
+"Deseo reclamar por un cobro incorrecto en mi factura",queja
+"La entrega llegó tarde y en mal estado",queja
+"No han atendido mi solicitud y quiero presentar un reclamo",queja
+"Tuve una mala experiencia con uno de sus asesores",queja
+"El pedido llegó con piezas faltantes",queja
+"Quiero reportar que el producto no funciona",queja
+"Estoy inconforme con la calidad del servicio",queja
+"Necesito una solución por el error en mi compra",queja
+"Ya hice varios reclamos y aún no me ayudan",queja
+"Quiero denunciar una mala gestión de mi caso",queja
+"Me entregaron otro producto diferente al que compré",queja
+"No respetaron la fecha prometida de entrega",queja
+"La atención al cliente fue deficiente y quiero quejarme",queja
+"Deseo reportar un problema con mi factura",queja
+"Mi pedido llegó abierto y con daños",queja
+"Quiero reclamar por información engañosa sobre el producto",queja
+"Nadie me dio solución y sigo esperando respuesta",queja
+"Necesito registrar una queja por incumplimiento del servicio",queja
+"Adjunto los documentos solicitados por el área administrativa",correo
+"Buenos días, envío la información requerida para continuar el trámite",correo
+"Por este medio remito el archivo solicitado",correo
+"Comparto el comprobante de pago para su validación",correo
+"Les escribo para consultar el estado de mi solicitud",correo
+"Adjunto mi constancia en formato PDF",correo
+"Quedo atento a su respuesta sobre el proceso",correo
+"Estoy enviando la documentación pendiente",correo
+"Les comparto mis datos actualizados para el registro",correo
+"Buenas tardes, quisiera saber si recibieron mi anterior mensaje",correo
+"Remito la evidencia solicitada para completar el expediente",correo
+"Necesito confirmar la recepción de este correo",correo
+"Estoy reenviando el mensaje porque no obtuve respuesta",correo
+"Adjunto la carta firmada para revisión",correo
+"Por favor, confirmar si el archivo fue recibido correctamente",correo
+"Envío la información complementaria para mi caso",correo
+"Solicito orientación sobre los pasos a seguir",correo
+"Les escribo para actualizar mis datos personales",correo
+"Comparto el formulario completo para su revisión",correo
+"Necesito saber en qué etapa se encuentra mi trámite",correo
+"Adjunto el reporte mensual solicitado",correo
+"Estoy enviando el contrato firmado",correo
+"Agradeceré su confirmación de recepción",correo
+"Quisiera consultar el procedimiento correcto para continuar",correo
+"Remito nuevamente la documentación porque faltaba una página",correo
+"Les envío el detalle solicitado por el supervisor",correo
+"Buenas noches, comparto la captura del problema reportado",correo
+"Quedo pendiente de cualquier observación adicional",correo
+"Envío el archivo corregido según sus indicaciones",correo
+"Necesito información sobre el estado actual de mi caso",correo
+"Estoy interesado en comprar su producto",venta
+"Quisiera una cotización para 20 unidades",venta
+"Necesito información sobre precios y promociones",venta
+"Deseo adquirir el plan premium para mi empresa",venta
+"¿Tienen descuento por compra al por mayor?",venta
+"Me gustaría recibir asesoría para concretar una compra",venta
+"Estoy evaluando comprar varios equipos este mes",venta
+"Quiero saber el precio del servicio anual",venta
+"Necesito una propuesta comercial para mi negocio",venta
+"Estoy buscando comprar licencias para mi equipo",venta
+"Deseo información sobre sus paquetes disponibles",venta
+"Quiero comprar hoy mismo si hay stock",venta
+"¿Pueden enviarme una cotización formal?",venta
+"Me interesa contratar su servicio cuanto antes",venta
+"Estoy comparando opciones y quiero conocer sus tarifas",venta
+"Necesito saber qué plan me conviene más para comprar",venta
+"Quisiera hablar con un asesor de ventas",venta
+"Estoy interesado en una compra corporativa",venta
+"Me gustaría conocer las promociones vigentes",venta
+"Necesito precio para una compra grande",venta
+"Quiero comprar 50 unidades para mi tienda",venta
+"¿Qué beneficios incluye el paquete empresarial?",venta
+"Estoy listo para contratar, solo necesito el costo final",venta
+"Deseo una demostración antes de realizar la compra",venta
+"Me interesa su producto y quiero más detalles comerciales",venta
+"Quisiera una oferta especial para nuevos clientes",venta
+"Necesito el catálogo completo con precios",venta
+"Estoy buscando proveedor y su propuesta me interesa",venta
+"Quiero información para cerrar la compra esta semana",venta
+"Estoy interesado en recibir una llamada del área comercial",venta
