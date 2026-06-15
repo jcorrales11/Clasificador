@@ -324,9 +324,7 @@ Gracias por contactar con CJ².
 
 def init_state():
     defaults = {
-        "cliente_input": "",
-        "correo_input": "",
-        "mensaje_input": "",
+        "form_version": 0,
         "last_feedback": None,
     }
     for key, value in defaults.items():
@@ -335,9 +333,7 @@ def init_state():
 
 
 def clear_form_fields():
-    st.session_state["cliente_input"] = ""
-    st.session_state["correo_input"] = ""
-    st.session_state["mensaje_input"] = ""
+    st.session_state["form_version"] += 1
 
 
 def store_feedback(payload: dict):
@@ -414,26 +410,31 @@ st.caption("Completa los datos del cliente y escribe el mensaje. El sistema gene
 
 render_feedback()
 
-with st.form("classification_form"):
+form_version = st.session_state["form_version"]
+cliente_key = f"cliente_input_{form_version}"
+correo_key = f"correo_input_{form_version}"
+mensaje_key = f"mensaje_input_{form_version}"
+
+with st.form(f"classification_form_{form_version}"):
     col1, col2 = st.columns(2)
     with col1:
         cliente = st.text_input(
             "Nombre del cliente",
             placeholder="Ejemplo: María López",
-            key="cliente_input",
+            key=cliente_key,
         )
     with col2:
         correo_cliente = st.text_input(
             "Correo del cliente (opcional)",
             placeholder="cliente@correo.com",
-            key="correo_input",
+            key=correo_key,
         )
 
     mensaje = st.text_area(
         "Mensaje del cliente",
         height=180,
         placeholder="Ejemplo: Quiero reclamar porque el producto llegó en mal estado y necesito una solución.",
-        key="mensaje_input",
+        key=mensaje_key,
     )
 
     submitted = st.form_submit_button("Registrar y clasificar")
